@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>mpAjax Demo #1</title>
+
+<style>
+table { width:500px; border:1px solid #000; border-collapse:collapse; }
+th, td { padding:5px; align:left; border:1px solid #000; }
+
+#loading { position:absolute; left:250px; top:300px; padding:15px; background-color:#fff; border:1px solid #000; width:250px; height:60px; line-height:16px; font-size:16px; }
+</style>
+
+<script language="javascript" type="text/javascript" src="json2.js"></script>
+<script language="javascript" type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.0/jquery.min.js"></script>
+<script language="javascript" type="text/javascript" src="jquery.mpAjax.js"></script>
+
+<script>
+
+function callback_handleList(data,status) {
+	$("#results").html(data.data);
+}
+function callback_handleData(data,status) {
+	var pdata = JSON.parse(data.data);
+
+	$("#status").html("Viewing 1-"+pdata.count+" of "+pdata.total);
+}
+
+/* *********************** */
+
+function searchCategory(catNum) {
+	var requestbody = {};
+	if (catNum && catNum !== "") requestbody.catid = parseInt(catNum,10);
+
+	jQuery.ajax({
+		cache:false,
+		type:"POST",
+		url:"http://test.getify.com/mpAjax/search.php",
+		data:"json="+JSON.stringify(requestbody),
+		success: {
+			"text/html":callback_handleList,
+			"application/json":callback_handleData
+		},
+		dataType:"text/plain"
+	});
+}
+
+
+
+$(document).ready(function() {
+	$("body")
+	.ajaxStart(function(){
+		$("#loading").show();
+		$("#event_method").hide();
+	})
+	.ajaxStop(function(){
+		$("#loading").hide();
+		$("#event_method").show();
+	});
+
+	$("#results").click(function(e){
+		var obj = e.target;
+		if ($(obj).is("a")) {
+			window.open("http://www.google.com/search?q="+encodeURIComponent($(obj).text()),"google");
+		}
+		e.preventDefault();
+		return false;
+	});
+	
+	$("#catid").bind("change",function(){
+		searchCategory($(this).val());
+	})
+	.get(0).selectedIndex = 0;
+
+	searchCategory();
+});
+
+</script>
+
+</head>
+
+<body>
+
+<p>
+<b>NOTE:</b> This is a live demo test script for mpAjax (multi-part Ajax responses). Read more about the project in the <a href="http://test.getify.com/mpAjax/description.html" target="_blank">Project Description</a>.
+</p>
+<p>
+	Questions or Thoughts? Contact me <a href="http://getify.tw">@getify</a> on twitter.
+</p>
+<br /><br />
+
+<div id="loading"><img src="ajax-loader.gif" width="16" height="16" /> Loading... please wait</div>
+
+
+<select id="catid" name="catid">
+	<option value="">--Select Category--</option>
+	<option value="1">Favorites</option>
+	<option value="2">Ones I have already</option>
+	<option value="3">Ones my wife wants</option>
+</select>
+</form>
+
+<h3>Results Status:</h3>
+<div id="status">--</div>
+
+<h3>Search Results</h3>
+<div id="results">--</div>
+
+</body>
+</html>
